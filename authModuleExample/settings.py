@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+# datetime permite hacer cáclulos con unidades de tiempo, como segundos, horas, fechas, etc.
+# Y timedelta permite hacer cálculos de intervalos de tiempo, por ejemplo, calcular dos días a
+# partir de hoy
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +41,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'authAppExample',
 ]
+
+# Agregada manualmente (despues de REST_FRAMEWORK), se define el tiempo de vida del access token,
+# del refresh token, una lista negra para NO reutilizar tokens, el algoritmo de encriptación...
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -48,6 +68,17 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Agregada manualmente (antes de SIMPLE_JWT), tiene llamados a funciones de librerías instaladas, por ejemplo, para
+# gestionar permisos hacia las clases, o para definir el método de autenticación (Json Web Token)
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
 ROOT_URLCONF = 'authModuleExample.urls'
 
@@ -73,10 +104,17 @@ WSGI_APPLICATION = 'authModuleExample.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# Se ha creado una base de datos local "TestLocalP49" para hacer pruebas, el usuario y contraseña
+# es postgres, en la IP localhost, el puerto es el 5432. Para hacer la conexión se indica que el tipo de
+# base de datos es de postgreSQL y el conector de python hacia postgre es el psycopg2 (instalado previamente)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE'    : 'django.db.backends.postgresql_psycopg2',
+        'NAME'      : 'p49_bank',
+        'USER'      : 'postgres',
+        'PASSWORD'  : 'postgres',
+        'HOST'      : 'localhost',
+        'PORT'      : '5432',
     }
 }
 
@@ -103,9 +141,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
